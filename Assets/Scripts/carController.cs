@@ -16,6 +16,7 @@ public class carController : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
 
+
         // let the gameObject fall down
        
     }
@@ -27,7 +28,7 @@ public class carController : MonoBehaviour
             // We are grounded, so recalculate
             // move direction directly from axes
 
-            moveDirection = new Vector3(0.0f, -1.0f, 0.0f);
+			moveDirection = new Vector3(0.0f, -1.0f, 0.0f);
             moveDirection = transform.TransformDirection(moveDirection);
             moveDirection = moveDirection * speed;
 
@@ -45,23 +46,26 @@ public class carController : MonoBehaviour
                     left=true;
                 }
             }
-        }
+		} else {
+			
+			moveDirection.y = moveDirection.y - (gravity * Time.deltaTime);
+		}
 
         // Apply gravity
-        moveDirection.y = moveDirection.y - (gravity * Time.deltaTime);
+		moveDirection.x = moveDirection.x + (speed * Time.deltaTime);
 
         // Move the controller
-        controller.Move(moveDirection * Time.deltaTime);
+        controller.Move(moveDirection);
     }
 
     
     void OnTriggerEnter(Collider c)
     {
-       if(c.name=="booster"){
+		if(c.name.Contains("booster")){
            
            speed = 110.0f;
            
-       }else if(c.name=="slower"){
+		}else if(c.name.Contains("slower")){
            speed = 50.0f;
        }
        Destroy(c.gameObject);
