@@ -4,8 +4,11 @@ using UnityEngine;
 
 public class carController : MonoBehaviour
 {
-    public float speed = 75.0f;
-    public float jumpSpeed = 8.0f;
+    private static float REGULAR_SPEED = 75.0f;
+    private static float FAST_SPEED = 100.0f;
+    private static float SLOW_SPEED = 50.0f;
+    private float speed = REGULAR_SPEED;
+    private float sidemov = 0.0f;
     public float gravity = 20.0f;
     private bool left = true;
 
@@ -15,59 +18,53 @@ public class carController : MonoBehaviour
     void Start()
     {
         controller = GetComponent<CharacterController>();
-
-
-        // let the gameObject fall down
-       
     }
 
     void Update()
     {
         if (controller.isGrounded)
         {
-            // We are grounded, so recalculate
-            // move direction directly from axes
-
-			moveDirection = new Vector3(0.0f, -1.0f, 0.0f);
+            moveDirection = new Vector3(1.0f, 0.0f, 1.0f);
             moveDirection = transform.TransformDirection(moveDirection);
-            moveDirection = moveDirection * speed;
+            moveDirection.x = moveDirection.x * speed;
+            moveDirection.z = moveDirection.z * sidemov;
 
             if (Input.GetMouseButtonDown(0))
             {   
-                if(left==true){
-                    controller.enabled = false;
-                    controller.transform.position = new Vector3(controller.transform.position.x, controller.transform.position.y,-13);
-                    controller.enabled = true;
+                if(left){
+                    sidemov=25.0f;
                     left=false;
                 }else{
-                    controller.enabled = false;
-                    controller.transform.position = new Vector3(controller.transform.position.x, controller.transform.position.y,13);
-                    controller.enabled = true;
+                    sidemov=-25.0f;
                     left=true;
                 }
             }
-		} else {
-			
-			moveDirection.y = moveDirection.y - (gravity * Time.deltaTime);
-		}
+        }
+        if((transform.position.z<-12.0&&!left)||(transform.position.z>12.0&&left)){
+            sidemov=0.0f;
+        }
 
-        // Apply gravity
-		moveDirection.x = moveDirection.x + (speed * Time.deltaTime);
-
-        // Move the controller
-        controller.Move(moveDirection);
+        moveDirection.y = moveDirection.y - (gravity * Time.deltaTime);
+        controller.Move(moveDirection * Time.deltaTime);
     }
 
-    
+    IEnumerator ChangeSpeed(float targetSpeed){
+        speed = targetSpeed;
+        yield return new WaitForSeconds(4.0f);
+        speed = REGULAR_SPEED;
+    }
+
     void OnTriggerEnter(Collider c)
     {
-		if(c.name.Contains("booster")){
+		if(c.gameObject.CompareTag("booster")){
            
-           speed = 110.0f;
+           StopCoroutine(ChangeSpeed(FAST_SPEED));
+           StartCoroutine(ChangeSpeed(FAST_SPEED));
            
-		}else if(c.name.Contains("slower")){
-           speed = 50.0f;
-       }
-       Destroy(c.gameObject);
+		}else if(c.gameObject.CompareTag("slower")){
+            StopCoroutine(ChangeSpeed(SLOW_SPEED));
+           StartCoroutine(ChangeSpeed(SLOW_SPEED));
+        }
+        Destroy(c.gameObject);
     }
 }
