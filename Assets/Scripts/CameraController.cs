@@ -1,22 +1,32 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class CameraController : MonoBehaviour
+namespace PathCreation.Examples
 {
-	public GameObject player;
-	private Vector3 offset;
+	// Moves along a path at constant speed.
+	// Depending on the end of path instruction, will either loop, reverse, or stop at the end of the path.
+	public class CameraController : MonoBehaviour
+	{
+		public PathCreator pathCreator;
+		public PathFollower player;
+		public EndOfPathInstruction endOfPathInstruction;
+		private Vector3 pos;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-		offset = transform.position - player.transform.position;
-        
-    }
+		private Vector3 smoothPos;
+		public float dist;
+	
+		float distanceTravelled;
 
-    // Update is called once per frame
-    void LateUpdate()
-    {
-		transform.position = new Vector3(player.transform.position.x + offset.x, transform.position.y, transform.position.z);
-    }
+		void Update()
+		{
+			if (pathCreator != null)
+			{
+                distanceTravelled = player.getDistance();
+                transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+                pos = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
+				smoothPos= Vector3.Lerp(transform.position, new Vector3(pos.x, 25, pos.z),0.9f);
+				transform.position = smoothPos + (transform.forward * -100);
+
+			}
+		}
+	}
 }

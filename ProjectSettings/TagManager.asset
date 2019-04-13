@@ -6,6 +6,7 @@ TagManager:
   tags:
   - booster
   - slower
+  - FinishLine
   layers:
   - Default
   - TransparentFX
